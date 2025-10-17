@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package services.address_wrapper.api;
+
+import "google/api/annotations.proto";
+import "shared/types/common.proto";
+
+service AddressWrapperService {
+  // Returns the place id from google's database for a particular address
+  rpc GetPlaceId(PlaceIdRequest) returns (PlaceIdResponse) {
+    option (google.api.http) = {
+      post: "/getPlaceId"
+      body: "*"
+    };
+  }
+}
+
+message PlaceIdRequest {
+  shared.types.Address address = 1;
+}
+
+message PlaceIdResponse {
+  string place_id = 1;
+}

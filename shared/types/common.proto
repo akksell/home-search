@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package shared.types;
+
+message Address {
+  string street = 1;
+  string city = 2;
+  string postal_code = 3;
+  string state_province_code = 4;
+  string country_code = 5;
+}

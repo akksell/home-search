@@ -1,0 +1,2 @@
+Compute cost estimate:
+[GCP Pricing Estimator](https://cloud.google.com/products/calculator?hl=en&dl=CjhDaVJsWm1WallqWTRaaTAxTldZMExUUXpOV1l0WWpReU9TMHdZakE0WkdFM01qUmxPRGtRQVE9PRAcGiQ3Mjk4QTExMS03OTAxLTQyREUtOTMxOS1EQkJBNUM3NDUxNjI)
