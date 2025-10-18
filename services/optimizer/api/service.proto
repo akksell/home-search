@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package services.optimizer.api;
+
+import "google/api/annotations.proto";
+import "services/rental_home_store/api/model.proto";
+
+service OptimizerService {
+  // Returns the result of applying a linear programming model (default)
+  // to the stored homes data store. Also supports a non-linear model
+  // for more complex or softer constraints
+  rpc Optimize(OptimizeRequest) returns (OptimizationResultResponse) {
+    option (google.api.http) = {
+      post: "/optimize"
+      body: "*"
+    };
+  }
+}
+
+enum OptimizationModel {
+  OPTIMIZATION_LINEAR_MODEL = 0;
+  OPTIMIZATION_NONLINEAR_MODEL = 1;
+}
+
+message OptimizeRequest {
+  uint32 max_result_count = 1;
+  OptimizationModel model_override = 2;
+}
+
+message OptimizationResultResponse {
+  repeated services.rental_home_store.api.RentalHome top_homes = 1;
+}

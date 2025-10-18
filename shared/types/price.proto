@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package shared.types;
+
+import "shared/types/date_time.proto";
+
+message AmountParts {
+  uint32 dollars = 1;
+  uint32 cents = 2;
+}
+
+message Money {
+  string currency_code = 1;
+  oneof money_amount {
+    string display_amount = 2;
+    AmountParts amount = 3;
+  }
+}
+
+message Fee {
+  Money total = 1;
+  string description = 2;
+  bool applied_per_applicant = 3;
+}
+
+message Credit {
+  Money total = 1;
+  string description = 2;
+  Duration duration_applied = 3;
+  Money average_amount_per_period = 4;
+}
+
+message RentalCost {
+  Money total = 1;
+  Money rent = 2;
+  Money security_deposit = 3;
+  Money utility_cost = 4;
+  repeated Fee fees = 5;
+  repeated Credit credits = 6;
+}

@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package services.rental_home_store.api;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "services/rental_home_store/api/model.proto";
+import "shared/types/common.proto";
+
+service HomeStoreService {
+  // Stores home data into document db
+  rpc Store(StoreHomeRequest) returns (StoreHomeResponse) {
+    option (google.api.http) = {
+      post: "/store"
+      body: "*"
+    };
+  }
+
+  // Get a single home from the store
+  rpc Retrieve(RetrieveRequest) returns (RetrieveResponse) {
+    option (google.api.http) = {
+      post: "/retrieve"
+      body: "*"
+    };
+  }
+
+  // Get multiple homes from the store based on a filter
+  rpc RetrieveMany(RetrieveManyRequest) returns (RetrieveManyResponse) {
+    option (google.api.http) = {
+      post: "/retrieveMany"
+      body: "*"
+    };
+  }
+
+  // returns the whole store. for internal use only
+  rpc RetrieveAll(google.protobuf.Empty) returns (stream RetrieveAllResponse);
+}
+
+message StoreHomeRequest {
+  RentalHome home = 1;
+}
+
+message StoreHomeResponse {
+  string id = 1;
+}
+
+message RetrieveRequest {
+  oneof retrieve_by_type {
+    string id = 1;
+    shared.types.Address address = 2;
+    string place_id = 3;
+  }
+}
+
+message RetrieveResponse {
+  RentalHome home = 1;
+}
+
+message RetrieveManyRequest {
+  repeated string id = 1;
+}
+
+message RetrieveManyResponse {
+  repeated RentalHome homes = 1;
+}
+
+message RetrieveAllResponse {
+  repeated RentalHome homes = 1;
+}

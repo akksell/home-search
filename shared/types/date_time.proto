@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package shared.types;
+
+message Duration {
+  uint32 years = 1;
+  uint32 months = 2;
+  uint32 days = 3;
+  uint32 hours = 4;
+  uint32 minutes = 5;
+  uint32 seconds = 6;
+}
+
+message Date {
+  uint32 year = 1;
+  uint32 month = 2;
+  uint32 day = 3;
+}

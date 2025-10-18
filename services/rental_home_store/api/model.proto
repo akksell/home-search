@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package services.rental_home_store.api;
+
+import "shared/types/common.proto";
+import "shared/types/date_time.proto";
+import "shared/types/price.proto";
+
+enum ResidenceType {
+  RESIDENCE_TYPE_SINGLE_FAMILY = 0;
+  RESIDENCE_TYPE_TOWNHOUSE = 1;
+}
+
+enum Appliance {
+  APPLIANCE_WASHER = 0;
+  APPLIANCE_DRYER = 1;
+  APPLIANCE_REFRIGERATOR = 2;
+  APPLIANCE_DISHWASHER = 3;
+  APPLIANCE_MICROWAVE = 4;
+  APPLIANCE_RANGE_OVEN = 5;
+  APPLIANCE_STOVETOP = 6;
+  APPLIANCE_OVEN = 7;
+  APPLIANCE_FREEZER = 8;
+  APPLIANCE_DISPOSAL = 9;
+}
+
+enum FloorType {
+  FLOOR_TYPE_CARPET = 0;
+  FLOOR_TYPE_HARDWOOD = 1;
+  FLOOR_TYPE_TILE = 2;
+  FLOOR_TYPE_VINYL = 3;
+  FLOOR_TYPE_LAMINATE = 4;
+  FLOOR_TYPE_ENGINEERED_WOOD = 5;
+  FLOOR_TYPE_HYBRID_RESILIENT = 6;
+}
+
+enum HeatingSystem {
+  HEATING_SYSTEM_FORCED_AIR = 0;
+  HEATING_SYSTEM_FIREPLACE = 1;
+}
+
+enum CoolingSystem {
+  COOLING_SYSTEM_CENTRAL_AIR = 0;
+  COOLING_SYSTEM_CEILING_FAN = 1;
+  COOLING_SYSTEM_AIR_CONDITIONER = 2;
+}
+
+enum LaundryType {
+  LAUNDRY_TYPE_IN_UNIT = 0;
+  LAUNDRY_TYPE_HOOKUP = 1;
+  LAUNDRY_TYPE_ON_SITE = 2;
+  LAUNDRY_TYPE_SHARED = 3;
+}
+
+message PetCharacteristic {
+  string pet_type_code = 1;
+  float maximum_weight_allowance = 2;
+  string weight_unit = 3;
+  uint32 maximum_count = 4;
+}
+
+message PetPolicy {
+  bool is_allowed = 1;
+  repeated string allowed_pet_types = 2;
+  repeated PetCharacteristic characteristics = 3;
+}
+
+message RentalPolicy {
+  string code = 1;
+  oneof policy {
+    float gross_income_multiple = 2;
+    uint32 minimum_credit_score = 3;
+    PetPolicy pets = 4;
+  }
+}
+
+message PropertyLotSize {
+  float size = 1;
+  // can be either square feet or acres
+  string unit = 2;
+}
+
+message RentalHome {
+  string id = 1;
+  shared.types.Address address = 2;
+  shared.types.RentalCost rental_cost = 3;
+  Metadata metadata = 4;
+  string description = 5;
+  bool is_available = 6;
+  repeated RentalPolicy policies = 7;
+  IndoorFeatures indoor_property_features = 8;
+  OutdoorFeatures outdoor_property_features = 9;
+  repeated shared.types.Duration lease_terms = 10;
+  shared.types.Date availability_date = 11;
+
+  message Metadata {
+    uint32 build_year = 1;
+    uint32 square_footage = 2;
+    uint32 bed_count = 3;
+    uint32 full_bath_count = 5;
+    uint32 half_bath_count = 6;
+    PropertyLotSize lot = 7;
+    ResidenceType residence_type = 8;
+  }
+
+  message IndoorFeatures {
+    repeated string included_appliances = 1;
+    LaundryType laundry_type = 2;
+    repeated FloorType floor_types = 3;
+    bool has_fireplace = 4;
+    repeated string miscellaneous_features = 5;
+  }
+
+  message OutdoorFeatures {
+    uint32 parking_space_vehicle_count = 1;
+    bool has_attached_garage = 2;
+    bool has_garage = 3;
+    bool has_driveway = 4;
+    string fence_type = 5;
+    bool has_private_pool = 6;
+    repeated string miscellaneous_features = 7;
+  }
+
+  message Community {
+    bool has_hoa = 1;
+    bool has_community_pool = 2;
+    bool is_gated = 3;
+  }
+}
