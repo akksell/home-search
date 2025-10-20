@@ -40,6 +40,9 @@
             # Protocol Buffers
             buf
             
+            # Build tooling
+            bazel_7
+            
             # Google Cloud SDK
             google-cloud-sdk
             
