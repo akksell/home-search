@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package shared.types;
+package base.types;
 
 message Address {
   string street = 1;

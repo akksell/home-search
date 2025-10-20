@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package services.roommate.api;
+
+import "google/api/annotations.proto";
+import "services/roommate/api/model.proto";
+
+service RoommateService {
+  // Adds a new roomate to consider in the home search
+  rpc AddRoommate(AddRoommateRequest) returns (AddRoommateResponse) {
+    option (google.api.http) = {
+      post: "/addRoommate"
+      body: "*"
+    };
+  }
+
+  // Makes a change to a roomate, such as adding or removing them from a group
+  // or updating their personal details
+  rpc UpdateRoommate(UpdateRoommateRequest) returns (UpdateRoommateResponse) {
+    option (google.api.http) = {
+      post: "/updateRoommate"
+      body: "*"
+    };
+  }
+
+  // Deletes a roommate from the system. Their data will be deleted and will no
+  // longer be considered for commute calculations or optimization calculations
+  rpc RetireRoommate(RetireRoommateRequest) returns (RetireRoommateResponse) {
+    option (google.api.http) = {
+      post: "/retireRoommate"
+      body: "*"
+    };
+  }
+}
+
+message AddRoommateRequest {
+  Roommate roommate = 1;
+}
+
+message AddRoommateResponse {
+  string roommate_id = 1;
+}
+
+message UpdateRoommateRequest {
+  repeated UpdateAction actions = 1;
+}
+
+message UpdateRoommateResponse {
+  Roommate roommate = 1;
+}
+
+message RetireRoommateRequest {
+  string roommate_id = 1;
+}
+
+message RetireRoommateResponse {
+  Roommate roommate = 1;
+}

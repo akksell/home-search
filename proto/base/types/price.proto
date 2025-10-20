@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package shared.types;
+package base.types;
 
-import "shared/types/date_time.proto";
+import "base/types/date_time.proto";
 
 message AmountParts {
   uint32 dollars = 1;

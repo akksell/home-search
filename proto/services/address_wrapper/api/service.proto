@@ -3,7 +3,7 @@ syntax = "proto3";
 package services.address_wrapper.api;
 
 import "google/api/annotations.proto";
-import "shared/types/common.proto";
+import "base/types/common.proto";
 
 service AddressWrapperService {
   // Returns the place id from google's database for a particular address
@@ -16,7 +16,7 @@ service AddressWrapperService {
 }
 
 message PlaceIdRequest {
-  shared.types.Address address = 1;
+  base.types.Address address = 1;
 }
 
 message PlaceIdResponse {

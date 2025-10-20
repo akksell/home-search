@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package services.rental_home_store.api;
 
-import "shared/types/common.proto";
-import "shared/types/date_time.proto";
-import "shared/types/price.proto";
+import "base/types/common.proto";
+import "base/types/date_time.proto";
+import "base/types/price.proto";
 
 enum ResidenceType {
   RESIDENCE_TYPE_SINGLE_FAMILY = 0;
@@ -82,16 +82,16 @@ message PropertyLotSize {
 
 message RentalHome {
   string id = 1;
-  shared.types.Address address = 2;
-  shared.types.RentalCost rental_cost = 3;
+  base.types.Address address = 2;
+  base.types.RentalCost rental_cost = 3;
   Metadata metadata = 4;
   string description = 5;
   bool is_available = 6;
   repeated RentalPolicy policies = 7;
   IndoorFeatures indoor_property_features = 8;
   OutdoorFeatures outdoor_property_features = 9;
-  repeated shared.types.Duration lease_terms = 10;
-  shared.types.Date availability_date = 11;
+  repeated base.types.Duration lease_terms = 10;
+  base.types.Date availability_date = 11;
 
   message Metadata {
     uint32 build_year = 1;

@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package services.roommate.api;
+
+import "base/types/date_time.proto";
+
+enum RoommateStatus {
+  ROOMMATE_STATUS_UNKNOWN = 0;
+  ROOMMATE_STATUS_ACTIVE = 1;
+  ROOMMATE_STATUS_RETIRED = 2;
+}
+
+enum DecisionStatus {
+  DECISION_STATUS_OPEN = 0;
+  DECISION_STATUS_PENDING = 1;
+  DECISION_STATUS_DECIDED = 2;
+  DECISION_STATUS_CONFLICTED = 3;
+}
+
+message Person {
+  string first_name = 1;
+  string middle_name = 2;
+  string last_name = 3;
+  base.types.Date date_of_birth = 4;
+}
+
+message Roommate {
+  string id = 1;
+  repeated string point_of_interest_ids = 2;
+  repeated string groups = 3;
+  Person personal_details = 4;
+  RoommateStatus status = 5;
+  DecisionStatus decision_status = 6;
+}
+
+message RoommateGroup {
+  string id = 1;
+  string name = 2;
+  // if each user in the group decides collectively on a home, then this
+  // status will change to DECISION_STATUS_DECIDED. Otherwise, it'll be in
+  // DECISION_STATUS_OPEN if 0 or 1 roomate(s) have made a decision or
+  // DECISION_STATUS_CONFLICTED when two or roomates have different selections
+  DecisionStatus decision_status = 3;
+  // This is an id to a rental home in the rental_home_store service
+  string selected_property_id = 4;
+}
+
+message UpdateAction {
+  oneof action {
+    string add_group_id = 1;
+    string remove_group_id = 2;
+    string add_point_of_interest_id = 3;
+    string remove_point_of_interest_id = 4;
+    Person change_personal_details = 5;
+  }
+}

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package shared.types;
+package base.types;
 
 message Duration {
   uint32 years = 1;
