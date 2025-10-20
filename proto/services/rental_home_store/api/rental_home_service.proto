@@ -4,7 +4,7 @@ package services.rental_home_store.api;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "services/rental_home_store/api/model.proto";
+import "services/rental_home_store/api/rental_home_model.proto";
 import "base/types/common.proto";
 
 service HomeStoreService {

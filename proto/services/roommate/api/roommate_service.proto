@@ -3,7 +3,7 @@ syntax = "proto3";
 package services.roommate.api;
 
 import "google/api/annotations.proto";
-import "services/roommate/api/model.proto";
+import "services/roommate/api/roommate_model.proto";
 
 service RoommateService {
   // Adds a new roomate to consider in the home search

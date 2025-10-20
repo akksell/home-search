@@ -3,7 +3,7 @@ syntax = "proto3";
 package services.optimizer.api;
 
 import "google/api/annotations.proto";
-import "services/rental_home_store/api/model.proto";
+import "services/rental_home_store/api/rental_home_model.proto";
 
 service OptimizerService {
   // Returns the result of applying a linear programming model (default)

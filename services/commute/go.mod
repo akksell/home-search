@@ -1,8 +1,8 @@
-module home-search.api.axel.to/commute
+module homesearch.axel.to/commute
 
 go 1.24.0
 
-toolchain go1.24.9
+toolchain go1.24.6
 
 require (
 	cloud.google.com/go/maps v1.24.0 // indirect

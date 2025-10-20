@@ -1,8 +1,20 @@
+# Bazel
+.bazel/
+bazel-*
+.bazelrc.user
+
 # Generated protobuf files
-**/gen/
-**/*.pb.go
-**/*_grpc.pb.go
-**/*.pb.gw.go
+# Ignore all .pb files
+**/*.pb.*
+**/*_grpc.pb.*
+**/*.pb.gw.*
+
+# Ignore everything in gen/ except go.mod and go.sum
+gen/**
+!gen/go/
+gen/go/**
+!gen/go/go.mod
+!gen/go/go.sum
 
 # Go build artifacts
 *.exe
@@ -12,7 +24,6 @@
 *.dylib
 *.test
 *.out
-go.work
 
 # IDE files
 .vscode/
