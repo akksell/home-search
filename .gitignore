@@ -3,6 +3,11 @@
 bazel-*
 .bazelrc.user
 
+# Terraform state output
+**/.terraform
+**/*.tfstate
+**/*.tfstate.backup
+
 # Generated protobuf files
 # Ignore all .pb files
 **/*.pb.*
