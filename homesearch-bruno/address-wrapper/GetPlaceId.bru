@@ -1,0 +1,27 @@
+meta {
+  name: GetPlaceId
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: {{}}
+  method: /services.address_wrapper.api.AddressWrapperService/GetPlaceId
+  body: grpc
+  auth: inherit
+  methodType: unary
+}
+
+body:grpc {
+  name: message 1
+  content: '''
+    {
+      "address": {
+        "countryCode": "US",
+        "street": "2400 Aviation Dr",
+        "stateProvinceCode": "TX",
+        "postalCode": "75261"
+      }
+    }
+  '''
+}

@@ -1,4 +1,4 @@
-module home-search.api.axel.to/address-wrapper
+module homesearch.axel.to/address_wrapper
 
 go 1.24.0
 
