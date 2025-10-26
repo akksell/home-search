@@ -2,118 +2,76 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
-	"home-search.api.axel.to/duration/config"
-	"home-search.api.axel.to/duration/internal/handlers"
-	"home-search.api.axel.to/duration/services"
+	routing "cloud.google.com/go/maps/routing/apiv2"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"homesearch.axel.to/commute/config"
+	"homesearch.axel.to/commute/internal/clients"
+	"homesearch.axel.to/commute/internal/service"
+	"homesearch.axel.to/commute/internal/store"
+
+	pb "homesearch.axel.to/services/commute/api"
 )
 
 func main() {
+	fmt.Println("Starting commute service...")
+
 	ctx := context.Background()
-	cfg := config.LoadConfig()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("%w", err)
+		return
+	}
+	listen, err := net.Listen("tcp", cfg.Port)
+	if err != nil {
+		fmt.Println("Failed to listen on port %v: %w", cfg.Port, err)
+		return
+	}
+	defer listen.Close()
 
-	// Initialize Google Maps service
-	googleMapsService := services.NewGoogleMapsService(cfg.GoogleMapsAPIKey)
+	addressWrapperClient, err := clients.NewAddressWrapperServiceClient(cfg.AddressWrapperSvcHost)
+	if err != nil {
+		fmt.Println("Failed to connect to address wrapper service at %v: %w", cfg.AddressWrapperSvcHost, err)
+		return
+	}
+	defer addressWrapperClient.Close()
 
-	// Initialize handlers
-	durationHandler := handlers.NewDurationHandler(googleMapsService)
+	roommateClient, err := clients.NewRoommateServiceClient(cfg.RoommateSvcHost)
+	if err != nil {
+		fmt.Println("Failed to connect to roommate service at %v: %w", cfg.RoommateSvcHost, err)
+		return
+	}
+	defer roommateClient.Close()
 
-	// Setup routes
-	router := setupRoutes(durationHandler)
-
-	// Add middleware
-	handler := addMiddleware(router)
-
-	// Create server
-	serverAddress := net.JoinHostPort(cfg.APIHost, cfg.APIPort)
-	server := &http.Server{
-		Addr:         serverAddress,
-		Handler:      handler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+	commuteStore, err := store.NewCommuteStore(ctx, cfg)
+	if err != nil {
+		fmt.Println("Failed to connect to commute store: %w", err)
+		return
 	}
 
-	// Start server in goroutine
-	go func() {
-		log.Printf("Duration service starting on %s", serverAddress)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
-		}
-	}()
-
-	// Wait for interrupt signal to gracefully shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("Shutting down server...")
-
-	// Graceful shutdown with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+	gRoutesServiceClient, err := routing.NewRoutesClient(ctx)
+	if err != nil {
+		fmt.Println("Failed to connect to google routes service: %w", err)
+		return
 	}
+	defer gRoutesServiceClient.Close()
 
-	log.Println("Server exited")
-}
+	// TODO: initialize service with TLS connection
+	service := service.NewCommuteService(addressWrapperClient, roommateClient, gRoutesServiceClient, commuteStore)
 
-func setupRoutes(durationHandler *handlers.DurationHandler) *http.ServeMux {
-	mux := http.NewServeMux()
+	grpcServer := grpc.NewServer()
+	pb.RegisterCommuteServiceServer(grpcServer, service)
 
-	// Health check endpoint
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
+	fmt.Println("Starting server on port: %v", cfg.Port)
 
-	// Duration calculation endpoint
-	mux.HandleFunc("/duration", durationHandler.CalculateDuration)
-
-	return mux
-}
-
-func addMiddleware(handler http.Handler) http.Handler {
-	// Add logging middleware
-	handler = loggingMiddleware(handler)
-
-	// Add CORS middleware
-	handler = corsMiddleware(handler)
-
-	return handler
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		next.ServeHTTP(w, r)
-		log.Printf("%s %s %v", r.Method, r.URL.Path, time.Since(start))
-	})
-}
-
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
+	// TODO: disable this in prod via environment variables since
+	//		 it opens up security vulnerabilities, its fine in local
+	reflection.Register(grpcServer)
+	if err := grpcServer.Serve(listen); err != nil {
+		fmt.Printf("Failed to server request: %v", err)
+	}
 }

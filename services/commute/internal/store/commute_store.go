@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	commutesCollectionName = "commutes"
+	commutesCollectionName = "commute"
 )
 
 var globalFirestoreInstance *firestore.Client
@@ -27,7 +27,7 @@ func NewCommuteStore(ctx context.Context, config *config.AppConfig) (*CommuteSto
 	store := &CommuteStore{}
 
 	store.projectId = config.GoogleProjectId
-	store.databaseId = config.PointOfInterestStoreDB
+	store.databaseId = config.CommuteStoreDB
 
 	if globalFirestoreInstance == nil {
 		newFireStoreInstance, err := firestore.NewClientWithDatabase(ctx, store.projectId, store.databaseId)
