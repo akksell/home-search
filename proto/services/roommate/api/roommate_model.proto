@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package services.roommate.api;
 
+import "base/types/common.proto";
 import "base/types/date_time.proto";
 
 enum RoommateStatus {
@@ -56,4 +57,13 @@ message UpdateAction {
     string remove_point_of_interest_id = 4;
     Person change_personal_details = 5;
   }
+}
+
+message PointOfInterest {
+  string id = 1;
+  base.types.Address address = 2;
+  string place_id = 3;
+  repeated string tags = 4;
+  string label = 5;
+  string roommate_id = 6;
 }

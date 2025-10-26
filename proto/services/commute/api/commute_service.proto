@@ -2,9 +2,10 @@ syntax = "proto3";
 
 package services.commute.api;
 
-import "google/api/annotations.proto";
 import "base/types/common.proto";
 import "base/types/date_time.proto";
+import "google/api/annotations.proto";
+import "services/roommate/api/roommate_model.proto";
 
 service CommuteService {
   // Calculates the average commute time for a location 30 days in the future
@@ -14,44 +15,19 @@ service CommuteService {
       body: "*"
     };
   }
-
-  // Adds a new point of interest to use in future calculation requests
-  rpc AddPointOfInterest(AddPointOfInterestRequest) returns (AddPointOfInterestResponse) {
-    option (google.api.http) = {
-      post: "/addPointOfInterest"
-      body: "*"
-    };
-  }
 }
 
 message CalculateRequest {
   base.types.Address home_address = 1;
   optional bool disable_traffic = 2;
+  string group_id = 3;
 }
 
 message CalculateResponse {
   repeated PointOfInterestDuration points_of_interest = 1;
 }
 
-message AddPointOfInterestRequest {
-  base.types.Address address = 1;
-  repeated string tags = 2;
-  string roommate_id = 3;
-}
-
-message AddPointOfInterestResponse {
-  string id = 1;
-  string place_id = 2;
-}
-
-message PointOfInterest {
-  string id = 1;
-  base.types.Address address = 2;
-  string place_id = 3;
-  repeated string tags = 4;
-}
-
 message PointOfInterestDuration {
-  PointOfInterest point_of_interest = 1;
+  services.roommate.api.PointOfInterest point_of_interest = 1;
   base.types.Duration duration = 2;
 }
