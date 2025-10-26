@@ -43,6 +43,9 @@ message RoommateGroup {
   DecisionStatus decision_status = 3;
   // This is an id to a rental home in the rental_home_store service
   string selected_property_id = 4;
+  string description = 5;
+  base.types.DateTime created_at = 6;
+  Roommate owner = 7;
 }
 
 message UpdateAction {

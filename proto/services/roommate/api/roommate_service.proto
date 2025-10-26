@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package services.roommate.api;
 
+import "base/types/date_time.proto";
 import "google/api/annotations.proto";
 import "services/roommate/api/roommate_model.proto";
 
@@ -31,6 +32,21 @@ service RoommateService {
       body: "*"
     };
   }
+
+  // Creates a group for roommates to join
+  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse) {
+    option (google.api.http) = {
+      post: "/createGroup"
+      body: "*"
+    };
+  }
+
+  rpc JoinGroup(JoinGroupRequest) returns (JoinGroupResponse) {
+    option (google.api.http) = {
+      post: "/joinGroup"
+      body: "*"
+    };
+  }
 }
 
 message AddRoommateRequest {
@@ -55,4 +71,23 @@ message RetireRoommateRequest {
 
 message RetireRoommateResponse {
   Roommate roommate = 1;
+}
+
+message CreateGroupRequest {
+  string creator_roommate_id = 1;
+  string group_name = 2;
+  string group_description = 3;
+  base.types.Date expected_move_in_date = 4;
+}
+
+message CreateGroupResponse {
+  string join_url = 2;
+}
+
+message JoinGroupRequest {
+  string group_id = 1;
+}
+
+message JoinGroupResponse {
+  string status = 1;
 }

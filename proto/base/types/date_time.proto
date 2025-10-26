@@ -16,3 +16,17 @@ message Date {
   uint32 month = 2;
   uint32 day = 3;
 }
+
+// Uses 24 hours time - total of this cannot exceed 24 hours
+message Time {
+  uint32 hour = 1;
+  uint32 minute = 2;
+  uint32 second = 3;
+  uint32 nanosecond = 4;
+}
+
+message DateTime {
+  Date date = 1;
+  Time time = 2;
+  uint32 utcOffsetSeconds = 3;
+}
