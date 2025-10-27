@@ -1,0 +1,27 @@
+meta {
+  name: AddRoommate
+  type: grpc
+  seq: 1
+}
+
+grpc {
+  url: http://localhost:8081
+  method: /services.roommate.api.RoommateService/AddRoommate
+  body: grpc
+  auth: inherit
+  methodType: unary
+}
+
+body:grpc {
+  name: message 1
+  content: '''
+    {
+      "roommate": {
+        "personal_details": {
+          "first_name": "Axel",
+          "last_name": "Ramone"
+        }
+      }
+    }
+  '''
+}

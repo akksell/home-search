@@ -1,0 +1,31 @@
+meta {
+  name: CreatePointOfInterest
+  type: grpc
+  seq: 3
+}
+
+grpc {
+  url: http://localhost:8081
+  method: /services.roommate.api.RoommateService/CreatePointOfInterest
+  body: grpc
+  auth: inherit
+  methodType: unary
+}
+
+body:grpc {
+  name: message 1
+  content: '''
+    {
+      "address": {
+        "street": "6214 Bishop Blvd",
+        "city": "Dallas",
+        "postal_code": "75275",
+        "state_province_code": "TX",
+        "country_code": "US"
+      },
+      "tags": ["testing"],
+      "label": "test - Dallas Museum of Arts",
+      "roommate_id": "5JRXhNrsZ2Ogascyda56"
+    }
+  '''
+}

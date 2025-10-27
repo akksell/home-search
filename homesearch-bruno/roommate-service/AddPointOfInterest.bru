@@ -1,0 +1,24 @@
+meta {
+  name: AddPointOfInterest
+  type: grpc
+  seq: 4
+}
+
+grpc {
+  url: http://localhost:8081
+  method: /services.roommate.api.RoommateService/AddPointOfInterest
+  body: grpc
+  auth: inherit
+  methodType: unary
+}
+
+body:grpc {
+  name: message 1
+  content: '''
+    {
+      "roommate_id": "CAVE4RoJVVg3sq3hJiFt",
+      "group_id": "5JRXhNrsZ2Ogascyda56",
+      "point_of_interest_id": "HaOiGv3fsvbHGCKwFpAh"
+    }
+  '''
+}

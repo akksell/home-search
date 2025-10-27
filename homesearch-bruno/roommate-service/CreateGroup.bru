@@ -1,0 +1,23 @@
+meta {
+  name: CreateGroup
+  type: grpc
+  seq: 2
+}
+
+grpc {
+  url: http://localhost:8081
+  method: /services.roommate.api.RoommateService/CreateGroup
+  body: grpc
+  auth: inherit
+  methodType: unary
+}
+
+body:grpc {
+  name: message 1
+  content: '''
+    {
+      "group_name": "2026 Move In",
+      "group_description": "Testing Groups"
+    }
+  '''
+}

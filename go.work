@@ -4,4 +4,5 @@ use (
 	./gen/go
 	./services/address_wrapper
 	./services/commute
+	./services/roommate
 )
