@@ -5,17 +5,23 @@ import (
 )
 
 func BuildComputeMatrixRequest(rentalPlaceId string, pointsOfInterestPlaceIds []string, disableTraffic bool) (*routingpb.ComputeRouteMatrixRequest, error) {
-	rentalOrigin := &routingpb.RouteMatrixOrigin{}
-	rentalOrigin.Waypoint.LocationType = &routingpb.Waypoint_PlaceId{
-		PlaceId: rentalPlaceId,
+	rentalOrigin := &routingpb.RouteMatrixOrigin{
+		Waypoint: &routingpb.Waypoint{
+			LocationType: &routingpb.Waypoint_PlaceId{
+				PlaceId: rentalPlaceId,
+			},
+		},
 	}
 	origins := []*routingpb.RouteMatrixOrigin{rentalOrigin}
 
 	var destinations []*routingpb.RouteMatrixDestination
 	for _, id := range pointsOfInterestPlaceIds {
-		destination := &routingpb.RouteMatrixDestination{}
-		destination.Waypoint.LocationType = &routingpb.Waypoint_PlaceId{
-			PlaceId: id,
+		destination := &routingpb.RouteMatrixDestination{
+			Waypoint: &routingpb.Waypoint{
+				LocationType: &routingpb.Waypoint_PlaceId{
+					PlaceId: id,
+				},
+			},
 		}
 		destinations = append(destinations, destination)
 	}

@@ -46,7 +46,7 @@ func (cs *commuteService) Calculate(ctx context.Context, request *pb.CalculateRe
 	homeAddress := request.GetHomeAddress()
 	placeIdResponse, err := cs.addressWrapperService.GetPlaceId(ctx, homeAddress)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to get address from address wrapper service: %w", err)
 	}
 	rentalPlaceId := placeIdResponse.GetPlaceId()
 	// TODO: try and fetch a commute from the store using the placeId and hashed address
@@ -55,7 +55,7 @@ func (cs *commuteService) Calculate(ctx context.Context, request *pb.CalculateRe
 	groupId := request.GetGroupId()
 	wrappedGroupPOIs, err := cs.roommateService.GetGroupPointsOfInterest(ctx, groupId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to get group points of interest from roommate service: %w", err)
 	}
 	groupPOIs := wrappedGroupPOIs.GetPointsOfInterest()
 	if len(groupPOIs) == 0 {
@@ -65,7 +65,7 @@ func (cs *commuteService) Calculate(ctx context.Context, request *pb.CalculateRe
 	// TODO: pull points of interest from firestore db, don't have time rn but
 	// 		 will implement soon™. For now, these are all manual placeIds
 	// tempPlaceIds := []string{"ChIJdbYmq-vTTYYRu_ZHX7-WoUU"}
-	var poiPlaceIds []string
+	poiPlaceIds := make([]string, 0)
 	for _, poi := range groupPOIs {
 		poiPlaceIds = append(poiPlaceIds, poi.PlaceId)
 	}
@@ -73,6 +73,7 @@ func (cs *commuteService) Calculate(ctx context.Context, request *pb.CalculateRe
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("built compute matrix request\n")
 
 	computeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	computeCtx = metadata.AppendToOutgoingContext(computeCtx, "X-Goog-Fieldmask", matrixFieldMask)
@@ -80,7 +81,7 @@ func (cs *commuteService) Calculate(ctx context.Context, request *pb.CalculateRe
 
 	resultsStream, err := cs.gRoutesService.ComputeRouteMatrix(computeCtx, computeRequest)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to get route service matrix stream: %w", err)
 	}
 
 	var streamErrors []error

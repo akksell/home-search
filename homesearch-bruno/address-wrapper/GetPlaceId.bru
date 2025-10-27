@@ -5,7 +5,7 @@ meta {
 }
 
 grpc {
-  url: {{}}
+  url: http://localhost:8080
   method: /services.address_wrapper.api.AddressWrapperService/GetPlaceId
   body: grpc
   auth: inherit
@@ -17,10 +17,11 @@ body:grpc {
   content: '''
     {
       "address": {
-        "countryCode": "US",
-        "street": "2400 Aviation Dr",
+        "street": "5409 Yellow Birch Dr",
+        "city": "Keller",
         "stateProvinceCode": "TX",
-        "postalCode": "75261"
+        "postalCode": "76244",
+        "countryCode": "US"
       }
     }
   '''

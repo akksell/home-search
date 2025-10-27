@@ -1,0 +1,22 @@
+meta {
+  name: GetGroupPointsOfInterest
+  type: grpc
+  seq: 5
+}
+
+grpc {
+  url: {{roommate_service_endpoint}}
+  method: /services.roommate.api.RoommateService/GetGroupPointsOfInterest
+  body: grpc
+  auth: inherit
+  methodType: unary
+}
+
+body:grpc {
+  name: message 1
+  content: '''
+    {
+      "group_id": "5JRXhNrsZ2Ogascyda56"
+    }
+  '''
+}

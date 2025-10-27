@@ -131,7 +131,7 @@ func (s *RoommateService) AddPointOfInterest(ctx context.Context, req *pb.AddPoi
 		PlaceId:           pointOfInterest.PlaceId,
 	}
 
-	var groupPOIs []*models.RoommateGroupPointOfInterest
+	var groupPOIs []*models.RoommateGroupPointOfInterest = group.PointsOfInterest
 	if group.PointsOfInterest == nil {
 		groupPOIs = make([]*models.RoommateGroupPointOfInterest, 1)
 	}

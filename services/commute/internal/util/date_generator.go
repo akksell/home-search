@@ -68,17 +68,17 @@ func (dg dateGenerator) GenerateTimestamp() (*timestamppb.Timestamp, error) {
 	serverNow := time.Now().In(location)
 
 	futureDate := serverNow.AddDate(0, MONTHS_TO_ADD, 0)
-	var monthsSeen []time.Month
+	monthsSeen := make([]time.Month, 0)
 	for isWithinExcludedMonth(futureDate, dg.excludeRanges) {
 		if len(monthsSeen) > 11 {
 			break
 		}
 		monthsSeen = append(monthsSeen, futureDate.Month())
-		futureDate.AddDate(0, 1, 0)
+		futureDate = futureDate.AddDate(0, 1, 0)
 	}
 	// statistically busiest day to commute
 	for futureDate.Weekday() != time.Thursday {
-		futureDate.AddDate(0, 0, 1)
+		futureDate = futureDate.AddDate(0, 0, 1)
 	}
 
 	// use 7AM as earliest (realisitic time we'd want to commute)

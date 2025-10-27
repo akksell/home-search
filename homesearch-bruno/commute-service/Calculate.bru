@@ -6,13 +6,25 @@ meta {
 
 grpc {
   url: {{commute_service_endpoint}}
+  method: /services.commute.api.CommuteService/Calculate
   body: grpc
   auth: inherit
+  methodType: unary
 }
 
 body:grpc {
   name: message 1
   content: '''
-    {}
+    {
+      "group_id": "5JRXhNrsZ2Ogascyda56",
+      "disable_traffic": false,
+      "home_address": {
+        "street": "1507 Cemetery Hill Rd",
+        "city": "Carrollton",
+        "postal_code": "75007",
+        "state_province_code": "TX",
+        "country_code": "US"
+      }
+    }
   '''
 }

@@ -28,21 +28,21 @@ func main() {
 	}
 	listen, err := net.Listen("tcp", cfg.Port)
 	if err != nil {
-		fmt.Println("Failed to listen on port %v: %w", cfg.Port, err)
+		fmt.Printf("Failed to listen on port %v: %v\n", cfg.Port, err)
 		return
 	}
 	defer listen.Close()
 
 	addressWrapperClient, err := clients.NewAddressWrapperServiceClient(cfg.AddressWrapperSvcHost)
 	if err != nil {
-		fmt.Println("Failed to connect to address wrapper service at %v: %w", cfg.AddressWrapperSvcHost, err)
+		fmt.Printf("Failed to connect to address wrapper service at %v: %v\n", cfg.AddressWrapperSvcHost, err)
 		return
 	}
 	defer addressWrapperClient.Close()
 
 	roommateClient, err := clients.NewRoommateServiceClient(cfg.RoommateSvcHost)
 	if err != nil {
-		fmt.Println("Failed to connect to roommate service at %v: %w", cfg.RoommateSvcHost, err)
+		fmt.Printf("Failed to connect to roommate service at %v: %v\n", cfg.RoommateSvcHost, err)
 		return
 	}
 	defer roommateClient.Close()
@@ -55,7 +55,7 @@ func main() {
 
 	gRoutesServiceClient, err := routing.NewRoutesClient(ctx)
 	if err != nil {
-		fmt.Println("Failed to connect to google routes service: %w", err)
+		fmt.Printf("Failed to connect to google routes service: %w\n", err)
 		return
 	}
 	defer gRoutesServiceClient.Close()
@@ -66,12 +66,12 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterCommuteServiceServer(grpcServer, service)
 
-	fmt.Println("Starting server on port: %v", cfg.Port)
+	fmt.Printf("Starting server on port: %v\n", cfg.Port)
 
 	// TODO: disable this in prod via environment variables since
 	//		 it opens up security vulnerabilities, its fine in local
 	reflection.Register(grpcServer)
 	if err := grpcServer.Serve(listen); err != nil {
-		fmt.Printf("Failed to server request: %v", err)
+		fmt.Printf("Failed to server request: %v\n", err)
 	}
 }

@@ -83,11 +83,11 @@ func (p *calculateResponseProcessor) GetResults() ([]*pb.PointOfInterestDuration
 }
 
 func computeDurationComponent(commuteInSeconds, componentBoundary int64) (uint32, int64) {
-	var updatedCommuteInSeconds int64
+	var updatedCommuteInSeconds int64 = commuteInSeconds
 	var component uint32 = 0
 	if commuteInSeconds/componentBoundary > 0 {
-		component = uint32(commuteInSeconds % componentBoundary)
-		updatedCommuteInSeconds -= commuteInSeconds % componentBoundary
+		component = uint32(commuteInSeconds / componentBoundary)
+		updatedCommuteInSeconds = commuteInSeconds % componentBoundary
 	}
 	return component, updatedCommuteInSeconds
 }
