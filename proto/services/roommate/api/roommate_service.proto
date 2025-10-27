@@ -50,12 +50,24 @@ service RoommateService {
   }
 
   // Adds a new point of interest to use in future calculation requests
+  rpc CreatePointOfInterest(CreatePointOfInterestRequest) returns (CreatePointOfInterestResponse) {
+    option (google.api.http) = {
+      post: "/createPointOfInterest"
+      body: "*"
+    };
+  }
+
+  // Adds a new point of interest to use in future calculation requests
   rpc AddPointOfInterest(AddPointOfInterestRequest) returns (AddPointOfInterestResponse) {
     option (google.api.http) = {
       post: "/addPointOfInterest"
       body: "*"
     };
   }
+
+  // For internal use only - use the public GetGroup rpc instead
+  // Returns all the points of interest for a particular group
+  rpc GetGroupPointsOfInterest(GetGroupPOIsRequest) returns (GetGroupPOIsResponse);
 }
 
 message AddRoommateRequest {
@@ -101,14 +113,32 @@ message JoinGroupResponse {
   string status = 1;
 }
 
-message AddPointOfInterestRequest {
+message CreatePointOfInterestRequest {
   base.types.Address address = 1;
   repeated string tags = 2;
   string roommate_id = 3;
   string label = 4;
 }
 
-message AddPointOfInterestResponse {
+message CreatePointOfInterestResponse {
   string id = 1;
   string place_id = 2;
+}
+
+message AddPointOfInterestRequest {
+  string roommate_id = 1;
+  string point_of_interest_id = 2;
+  string group_id = 3;
+}
+
+message AddPointOfInterestResponse {
+  string status = 1;
+}
+
+message GetGroupPOIsRequest {
+  string group_id = 1;
+}
+
+message GetGroupPOIsResponse {
+  repeated PointOfInterest points_of_interest = 1;
 }

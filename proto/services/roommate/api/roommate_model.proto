@@ -31,6 +31,11 @@ message Roommate {
   repeated string groups = 3;
   Person personal_details = 4;
   RoommateStatus status = 5;
+  // NOTE: this status probably??? doesn't work unless I
+  // duplicate roommates depending on the group but that's really dumb
+  // 1 roommate should be treated as 1 user, not as a duplicate
+  // of auth datastore. It should be moved to an array in the group
+  // instea
   DecisionStatus decision_status = 6;
 }
 
