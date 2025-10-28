@@ -19,7 +19,13 @@ jobs:
       - name: Detect changed services
         id: changes
         run: |
-          services=$(ls -d services/* | sed -E 's/^services\///')
+          services_directories=( services/*/ )
+          services=()
+          
+          for service_dir in "${services[@]}"; do
+            # get all directories in services folder and strip away end '/' and 'services/' prefix
+            service=$(echo "${service_dir}" | sed -E 's/^services\///' | sed -E 's/\/$//')
+          done
           
           changed_services=()
           
