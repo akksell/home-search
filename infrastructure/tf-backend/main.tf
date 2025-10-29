@@ -13,7 +13,7 @@ resource "google_storage_bucket" "default" {
 
 resource "local_file" "default" {
   file_permission = "0644"
-  filename        = "backend.${var.environment}.config"
+  filename        = "config/backend.${var.environment}.config"
 
   content = templatefile("${path.module}/backend.tftpl", { bucket_name = google_storage_bucket.default.name })
 }
