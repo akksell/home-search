@@ -27,7 +27,7 @@ jobs:
           changed_services=($(./.github/workflows/get-service-diff.sh))
           
           if [ ${#changed_services[@]} -gt 0 ]; then
-            matrix=$(printf '%s\n' "${changed_services[@]}" | jq -R . | jq -s .)
+            matrix=$(printf '%s\n' "${changed_services[@]}" | jq -R . | jq -s . | jq -c .)
             echo "matrix={\"service\":$matrix}" >> $GITHUB_OUTPUT
             echo "Changed services: ${changed_services[*]}"
           else
@@ -40,6 +40,9 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.matrix != '{"service":[]}'
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.matrix).service }}
@@ -54,6 +57,20 @@ jobs:
       - name: Install Nix
         if: false
         uses: cachix/install-nix-action@v31.8.1
+
+        # TODO: this should not be used in favor of using nix
+      - name: Setup buf
+        uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+
+      - name: Generate protobufs
+        run: |
+          cd ../../
+          export GOPATH=$HOME/go
+          export PATH=$PATH:$GOPATH/bin
+          go install tool
+          buf generate
     
       - name: Build service binary
         run: make build
