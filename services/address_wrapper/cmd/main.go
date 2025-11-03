@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 
 	"google.golang.org/grpc"
@@ -15,32 +16,36 @@ import (
 func main() {
 	// TODO: use proper logging tool -> see shared/go-pkg/logger
 	//		 replace all usages of Printf with an implemented logger
-	fmt.Printf("Starting Address Wrapper Service")
+	fmt.Printf("Starting Address Wrapper Service\n")
 
-	config := config.LoadConfig()
-	// TODO: read this from env/cloud run deployment
-	port := ":8080"
-
-	listen, err := net.Listen("tcp", port)
+	configuration, err := config.LoadConfig()
 	if err != nil {
-		fmt.Printf("Failed to listen on port %v", port)
+		log.Fatalf("Failed to start: %v\n", err)
+	}
+	address := net.JoinHostPort("", configuration.Port)
+
+	listen, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatalf("Failed to listen on port %v\n", configuration.Port)
 	}
 	defer listen.Close()
 
 	// TODO: get credential file and create HTTPS connection
 	service := &service.AddressWrapperService{
-		Config: config,
+		Config: configuration,
 	}
 	// TODO: consider reading grpc options on initialization
 	grpcServer := grpc.NewServer()
 	pb.RegisterAddressWrapperServiceServer(grpcServer, service)
-	fmt.Printf("Starting server on port: %v", port)
+	fmt.Printf("Starting server on port: %v\n", configuration.Port)
 
 	// TODO: disable this in prod via environment variables since
 	//		 it opens up security vulnerabilities, its fine in local
-	reflection.Register(grpcServer)
+	if configuration.Environment == config.EnvironmentDevelop {
+		reflection.Register(grpcServer)
+	}
 	if err := grpcServer.Serve(listen); err != nil {
-		fmt.Printf("Failed to server request: %v", err)
+		fmt.Printf("Failed to server request: %v\n", err)
 	}
 
 }
