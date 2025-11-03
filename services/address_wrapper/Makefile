@@ -1,8 +1,10 @@
 GOLANG=go
+CGO_ENABLED=0
+GOOS=linux
 
 .PHONY: build
 build:
-	${GOLANG} build -o build/address_wrapper ./cmd/*.go
+	CGO_ENABLED=${CGO_ENABLED} GOOS=${GOOS} ${GOLANG} build -o build/address_wrapper ./cmd/*.go
 
 .PHONY: run-local
 run-local:

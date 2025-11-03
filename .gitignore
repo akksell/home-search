@@ -29,6 +29,7 @@ gen/go/**
 *.dylib
 *.test
 *.out
+**/build/
 
 # IDE files
 .vscode/

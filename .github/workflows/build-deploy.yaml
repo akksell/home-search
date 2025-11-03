@@ -4,6 +4,11 @@ on:
     branches:
       - main
 
+env:
+  PROJECT_ID: home-search-475404
+  ARTIFACT_REGISTRY: homesearch-services-docker
+  GCP_REGION: us-south1
+
 jobs:
   detect-changes:
     name: Detect Service Changes
@@ -53,39 +58,45 @@ jobs:
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.matrix).service }}
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        # skipping this for now since now build system is configured for services
+      - name: Install Nix
+        if: false
+        uses: cachix/install-nix-action@v31.8.1
+    
+      - name: Build service binary
+        run: make build
       
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
+      - name: Generate image tag name
+        id: image_tag_name
+        run: echo "tag=${{ matrix.service }}:$(echo ${{ github.sha }} | cut -c1-8)" >> "$GITHUB_OUTPUT"
+
+      - name: Build service container image
+        run: docker build -t ${{ steps.image_tag_name.outputs.tag }} .
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v3
         with:
-          registry: ghcr.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
         with:
-          images: aksell/axel.to
-          tags: |
-            type=sha,prefix=${{ matrix.service }}-
+          project_id: ${{ env.PROJECT_ID }}
+          version: '544.0.0'
       
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./services/${{ matrix.service }}
-          file: ./services/${{ matrix.service }}/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Setup Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
       
-      - name: Deploy service
+      - name: Build and push service container image
         run: |
-          echo "Deploying ${{ matrix.service }} service..."
-          echo "Image: ${{ steps.meta.outputs.tags }}"
+          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ steps.image_tag_name.outputs.tag }}" .
+          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ steps.image_tag_name.outputs.tag }}"
     
