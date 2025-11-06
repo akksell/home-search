@@ -8,7 +8,7 @@ resource "google_cloud_run_v2_service" "default" {
     component: "core"
   }
 
-  ingress = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   scaling {
     min_instance_count = 0
