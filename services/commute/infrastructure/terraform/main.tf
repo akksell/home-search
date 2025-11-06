@@ -1,31 +1,52 @@
-provider "google" {
-  project = var.project_id
-  region = var.region
-}
-
-/*resource "google_cloud_run_v2_service" "default" {
-  name = var.service_name
+resource "google_cloud_run_v2_service" "default" {
+  name = "hs-${var.service_name}-${var.environment}"
   location = var.region
-  deletion_protection = true
+  description = "Service to manage roommate details including roommate groups, points of interest, etc."
   launch_stage = "ALPHA"
-  ingress = "INGRESS_TRAFFIC_ALL"
+
+  labels = {
+    component: "core"
+  }
+
+  ingress = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+
   scaling {
     min_instance_count = 0
     max_instance_count = 2
     scaling_mode = "AUTOMATIC"
   }
+
+  # TODO: envoy sidecar configuration
   template {
     containers {
-      name = "${var.service_name}-app"
-      image = # todo
-      depends_on = ["envoy-auth-sidecar"]
+      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute:6509d955"
+      ports {
+        name           = "h2c"
+        container_port = 8080
+      }
+
+      env {
+        name = "GOOGLE_PROJECT_ID"
+        value = var.project_id
+      }
+      env {
+        name = "COMMUTE_STORE_DATABASE"
+        value = google_firestore_database.point_of_interest_store.name
+      }
+      env {
+        name = "ADDRESS_WRAPPER_SERVICE_HOST"
+        value = var.address_wrapper_service_host
+      }
+      env {
+        name = "ROOMMATE_SERVICE_HOST"
+        value = var.roommate_service_host
+      }
     }
-    containers {
-      name = "envoy-auth-sidecar"
-      image = # todo: envoy proxy
-    }
+
+    timeout = "10s"
+    health_check_disabled = false
 
     service_account = google_service_account.app_service_account.email
   }
+
 }
-*/

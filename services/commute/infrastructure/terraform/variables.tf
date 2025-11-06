@@ -19,3 +19,13 @@ variable "service_name" {
   description = "Name of the service"
   type = string
 }
+
+variable "address_wrapper_service_host" {
+  description = "Internal GCP URL of the deployed Address Wrapper Service"
+  type = string 
+}
+
+variable "roommate_service_host" {
+  description = "Internal GCP URL of the deployed Roommate Service"
+  type = string 
+}
