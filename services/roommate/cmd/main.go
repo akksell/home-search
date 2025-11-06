@@ -24,7 +24,8 @@ func main() {
 		return
 	}
 
-	listen, err := net.Listen("tcp", cfg.Port)
+	host := net.JoinHostPort("", cfg.Port)
+	listen, err := net.Listen("tcp", host)
 	if err != nil {
 		fmt.Printf("Failed to start Roommate Service: %v\n", err)
 		return

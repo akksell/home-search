@@ -26,7 +26,9 @@ func main() {
 		log.Fatal("%w", err)
 		return
 	}
-	listen, err := net.Listen("tcp", cfg.Port)
+
+	host := net.JoinHostPort("", cfg.Port)
+	listen, err := net.Listen("tcp", host)
 	if err != nil {
 		fmt.Printf("Failed to listen on port %v: %v\n", cfg.Port, err)
 		return
