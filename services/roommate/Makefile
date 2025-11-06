@@ -1,4 +1,10 @@
 GOLANG=go
+CGO_ENABLED=0
+GOOS=linux
+
+.PHONY: build
+build:
+	CGO_ENABLED=${CGO_ENABLED} GOOS=${GOOS} ${GOLANG} build -o build/roommate ./cmd/*.go
 
 .PHONY: run-local
 run-local:

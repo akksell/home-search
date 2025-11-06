@@ -55,7 +55,7 @@ func main() {
 
 	gRoutesServiceClient, err := routing.NewRoutesClient(ctx)
 	if err != nil {
-		fmt.Printf("Failed to connect to google routes service: %w\n", err)
+		fmt.Printf("Failed to connect to google routes service: %v\n", err)
 		return
 	}
 	defer gRoutesServiceClient.Close()
