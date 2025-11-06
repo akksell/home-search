@@ -14,5 +14,10 @@ terraform {
     }
   }
 
-  required_version = "1.12.1"
+  required_version = "1.12.0"
+}
+
+provider "google" {
+  project = var.project_id
+  region = var.region
 }

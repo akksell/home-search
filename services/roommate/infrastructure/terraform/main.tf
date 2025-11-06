@@ -1,0 +1,47 @@
+resource "google_cloud_run_v2_service" "default" {
+  name = "hs-${var.service_name}-${var.environment}"
+  location = var.region
+  description = "Service to manage roommate details including roommate groups, points of interest, etc."
+  launch_stage = "ALPHA"
+
+  labels = {
+    component: "core"
+  }
+
+  ingress = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+
+  scaling {
+    min_instance_count = 0
+    max_instance_count = 2
+    scaling_mode = "AUTOMATIC"
+  }
+
+  template {
+    containers {
+      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/roommate:6509d955"
+      ports {
+        name           = "h2c"
+        container_port = 8080
+      }
+
+      env {
+        name = "GOOGLE_PROJECT_ID"
+        value = var.project_id
+      }
+      env {
+        name = "ROOMMATE_STORE_DATABASE"
+        value = google_firestore_database.roommate_store.name
+      }
+      env {
+        name = "ADDRESS_WRAPPER_SERVICE_HOST"
+        value = var.address_wrapper_service_host
+      }
+    }
+
+    timeout = "10s"
+    health_check_disabled = false
+
+    service_account = google_service_account.app_service_account.email
+  }
+
+}
