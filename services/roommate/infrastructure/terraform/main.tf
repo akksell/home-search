@@ -45,3 +45,17 @@ resource "google_cloud_run_v2_service" "default" {
   }
 
 }
+
+resource "google_cloud_run_v2_service_iam_member" "address_service_member" {
+  project = data.google_cloud_run_v2_service.address_service.project
+  location = data.google_cloud_run_v2_service.address_service.location
+  name = data.google_cloud_run_v2_service.address_service.name
+  role = "roles/run.invoker"
+  member = "serviceAccount:${google_service_account.app_service_account.email}"
+}
+
+data "google_cloud_run_v2_service" "address_service" {
+  name = "hs-address-wrapper-${var.environment}"
+  location = var.region
+  project = var.project_id
+}
