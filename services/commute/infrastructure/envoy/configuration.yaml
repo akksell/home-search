@@ -1,0 +1,84 @@
+static_resources:
+  listeners:
+    - name: listener_0
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8080
+      filter_chains:
+        - filters:
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: ingress_http
+              route_config:
+                name: service_routes
+                virtual_hosts:
+                  - name: service
+                    domains:
+                      - "*"
+                    routes:
+                      - match:
+                          prefix: "/"
+                        route:
+                          cluster: service_cluster
+              http_filters:
+                - name: envoy.filters.http.jwt_authn
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+                    providers:
+                      auth0_provider:
+                        issuer: https://dev-uf4l5nsmhlyab0tl.us.auth0.com
+                        audiences:
+                          - https://commute.homesearch.api.axel.to
+                        remote_jwks:
+                          http_uri:
+                            uri: https://dev-uf4l5nsmhlyab0tl.us.auth0.com/.well-known/jwks.json
+                            cluster: auth0_jwks_cluster
+                            timeout: 2s
+                          cache_duration: 300s
+    
+                - name: envoy.filters.http.grpc_json_transcoder
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
+                    proto_descriptor: service-descriptor.pbin
+                    services:
+                      - services.commute.api.CommuteService
+                    print_options:
+                      add_whitespace: false
+                      always_print_primitive_fields: false
+                      always_print_enums_as_ints: false
+                      preserve_proto_field_names: false
+                    request_validation_options:
+                      reject_unknown_method: true
+
+  clusters:
+    - name: service_cluster
+      type: STRICT_DNS 
+      load_assignment:
+        cluster_name: service_cluster
+        endpoints:
+          - lb_endpoints:
+            - endpoint:
+              address:
+                socket_address:
+                  address: "127.0.0.1"
+                  port_value: 8081
+
+    - name: auth0_jwks_cluster
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignmnet:
+        cluster_name: auth0_jwks_cluster
+        endpoints:
+          - lb_endpoints:
+            - endpoint:
+              address:
+                socket_address:
+                  address: dev-uf4l5nsmhlyab0tl.us.auth0.com
+                  port_value: 443
+      transport_socket:
+        name: envoy.transport_sockets.tls        
+        typed_config: 
+          "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+          sni: dev-uf4l5nsmhlyab0tl.us.auth0.com
