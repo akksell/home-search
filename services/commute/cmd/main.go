@@ -70,9 +70,9 @@ func main() {
 
 	fmt.Printf("Starting server on port: %v\n", cfg.Port)
 
-	// TODO: disable this in prod via environment variables since
-	//		 it opens up security vulnerabilities, its fine in local
-	reflection.Register(grpcServer)
+	if cfg.Environment == config.EnvironmentDevelopment {
+		reflection.Register(grpcServer)
+	}
 	if err := grpcServer.Serve(listen); err != nil {
 		fmt.Printf("Failed to server request: %v\n", err)
 	}
