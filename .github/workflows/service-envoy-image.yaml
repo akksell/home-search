@@ -1,0 +1,115 @@
+name: Build Envoy Sidecar Images
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: home-search-475404
+  ARTIFACT_REGISTRY: homesearch-services-docker
+  GCP_REGION: us-south1
+
+jobs:
+  detect-envoy-changes:
+    name: Detect Service Envoy Infrastructure Changes
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.changes.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      
+      - name: Detect changed envoy infrastructure
+        id: changes
+        run: |
+          services_directories=( services/*/ )
+          services=()
+
+          for service_dir in "${services_directories[@]}"; do
+            # get all directories in services folder and strip away end '/' and 'services/' prefix
+            service=$(echo "${service_dir}" | sed -E 's/^services\///' | sed -E 's/\/$//')
+            services+=("$service")
+          done
+          
+          echo "Found ${#services[@]} service(s): ${services[@]}"
+          
+          changed_services=()
+
+          for service in "${services[@]}"; do
+            service_in_changes=$(git diff --name-only HEAD~1 HEAD | grep -E "^services/${service}/infrastructure/envoy/" || echo "")
+            if [ -n "$service_in_changes" ]; then
+              changed_services+=("$service")
+            fi
+          done
+          
+          echo "Detected ${#changed_services[@]} changed service(s): ${changed_services[@]}"
+
+          if [ ${#changed_services[@]} -gt 0 ]; then
+            matrix=$(printf '%s\n' "${changed_services[@]}" | jq -R . | jq -s . | jq -c .)
+            echo "matrix={\"service\":$matrix}" >> $GITHUB_OUTPUT
+            echo "Changed infrastructure for services: ${changed_services[*]}"
+          else
+            echo "matrix={\"service\":[]}" >> $GITHUB_OUTPUT
+            echo "No infrastructure changes detected"
+          fi
+
+  build-envoy-image:
+    name: Build ${{ matrix.service }} Envoy Sidecar
+    needs: detect-envoy-changes
+    if: needs.detect-envoy-changes.outputs.matrix != '{"service":[]}'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-envoy-changes.outputs.matrix).service }}
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}/infrastructure/envoy
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      
+      - name: Setup buf
+        uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+
+      - name: Generate proto descriptor set for service
+        run: |
+          cd ../../../../
+          export GOPATH=$HOME/go
+          export PATH=$PATH:$GOPATH/bin
+          go install tool
+          echo "Building protobuf descriptors for service ${{ matrix.service }}"
+          buf build proto/services/${{ matrix.service }}/api/* -o service-descriptor.binpb
+          echo "Moving descriptors to service directory"
+          mv service-descriptor.binpb services/${{ matrix.service }}/infrastructure/envoy/service-descriptor.binpb
+    
+      - name: Generate image tag name
+        id: image_tag_name
+        run: echo "tag=${{ matrix.service }}-envoy:$(echo ${{ github.sha }} | cut -c1-8)" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          version: '544.0.0'
+      
+      - name: Setup Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+      
+      - name: Build and push service container image
+        run: |
+          docker build -t "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ steps.image_tag_name.outputs.tag }}" .
+          docker push "${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ steps.image_tag_name.outputs.tag }}"
+    
