@@ -76,7 +76,7 @@ func (rs *RoommateServiceClient) GetGroupPointsOfInterest(ctx context.Context, g
 		return nil, fmt.Errorf("Failed to get group points of interest: %w", err)
 	}
 
-	reqContext = grpcMetadata.AppendToOutgoingContext(reqContext, "audience", "Bearer "+token.AccessToken)
+	reqContext = grpcMetadata.AppendToOutgoingContext(reqContext, "authorization", "Bearer "+token.AccessToken)
 
 	request := &pb.GetGroupPOIsRequest{
 		GroupId: groupId,
