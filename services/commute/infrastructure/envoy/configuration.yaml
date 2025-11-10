@@ -37,6 +37,11 @@ static_resources:
                             cluster: auth0_jwks_cluster
                             timeout: 2s
                           cache_duration: 300s
+                    rules:
+                      - match:
+                          prefix: /
+                        requires:
+                          provider_name: auth0_provider
     
                 - name: envoy.filters.http.grpc_json_transcoder
                   typed_config:
