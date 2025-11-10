@@ -22,6 +22,7 @@ resource "google_cloud_run_v2_service" "default" {
       name = "envoy-sidecar"
       image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute-envoy:4c58ddfd"
       ports {
+        name = "h2c"
         container_port = 8080
       }
     }
@@ -53,6 +54,10 @@ resource "google_cloud_run_v2_service" "default" {
       env {
         name = "ROOMMATE_SERVICE_HOST"
         value = var.roommate_service_host
+      }
+      env {
+        name = "PORT"
+        value = 8081
       }
     }
 
