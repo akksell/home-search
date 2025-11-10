@@ -35,14 +35,14 @@ func main() {
 	}
 	defer listen.Close()
 
-	addressWrapperClient, err := clients.NewAddressWrapperServiceClient(cfg.AddressWrapperSvcHost)
+	addressWrapperClient, err := clients.NewAddressWrapperServiceClient(ctx, cfg.AddressWrapperSvcHost)
 	if err != nil {
 		fmt.Printf("Failed to connect to address wrapper service at %v: %v\n", cfg.AddressWrapperSvcHost, err)
 		return
 	}
 	defer addressWrapperClient.Close()
 
-	roommateClient, err := clients.NewRoommateServiceClient(cfg.RoommateSvcHost)
+	roommateClient, err := clients.NewRoommateServiceClient(ctx, cfg.RoommateSvcHost)
 	if err != nil {
 		fmt.Printf("Failed to connect to roommate service at %v: %v\n", cfg.RoommateSvcHost, err)
 		return
