@@ -20,7 +20,7 @@ resource "google_cloud_run_v2_service" "default" {
   template {
     containers {
       name = "envoy-sidecar"
-      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute-envoy:4c58ddfd"
+      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute-envoy:2218c734"
       ports {
         name = "h2c"
         container_port = 8080
@@ -29,7 +29,7 @@ resource "google_cloud_run_v2_service" "default" {
 
     containers {
       name = "service"
-      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute:6509d955"
+      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute:bde5d862"
       /*
       ports {
         name           = "h2c"
