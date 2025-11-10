@@ -68,7 +68,7 @@ static_resources:
     - name: auth0_jwks_cluster
       type: STRICT_DNS
       lb_policy: ROUND_ROBIN
-      load_assignmnet:
+      load_assignment:
         cluster_name: auth0_jwks_cluster
         endpoints:
           - lb_endpoints:
