@@ -16,6 +16,6 @@ resource "google_project_iam_member" "roommate_service_datastore_manager" {
   condition {
     title = "restrict_rw_access_to_roommate_store"
     description = "Only access the roommate firestore instance - used for service accounts for the roommate service"
-    expression = "resource.name == '${google_firestore_database.roommate_store.name}'"
+    expression = "resource.name.startsWith('projects/${var.project_id}/databases/${google_firestore_database.roommate_store.name}')"
   }
 }
