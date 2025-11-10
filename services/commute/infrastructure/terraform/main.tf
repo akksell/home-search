@@ -18,6 +18,14 @@ resource "google_cloud_run_v2_service" "default" {
 
   template {
     containers {
+      name = "envoy-sidecar"
+      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute-envoy:4c58ddfd"
+      ports {
+        container_port = 8080
+      }
+    }
+
+    containers {
       name = "service"
       image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute:6509d955"
       /*
@@ -26,6 +34,8 @@ resource "google_cloud_run_v2_service" "default" {
         container_port = 8080
       }
       */
+     
+      depends_on = ["envoy-sidecar"]
 
       env {
         name = "GOOGLE_PROJECT_ID"
