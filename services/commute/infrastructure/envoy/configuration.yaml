@@ -60,10 +60,10 @@ static_resources:
         endpoints:
           - lb_endpoints:
             - endpoint:
-              address:
-                socket_address:
-                  address: "127.0.0.1"
-                  port_value: 8081
+                address:
+                  socket_address:
+                    address: "127.0.0.1"
+                    port_value: 8081
 
     - name: auth0_jwks_cluster
       type: STRICT_DNS
@@ -73,10 +73,10 @@ static_resources:
         endpoints:
           - lb_endpoints:
             - endpoint:
-              address:
-                socket_address:
-                  address: dev-uf4l5nsmhlyab0tl.us.auth0.com
-                  port_value: 443
+                address:
+                  socket_address:
+                    address: dev-uf4l5nsmhlyab0tl.us.auth0.com
+                    port_value: 443
       transport_socket:
         name: envoy.transport_sockets.tls        
         typed_config: 
