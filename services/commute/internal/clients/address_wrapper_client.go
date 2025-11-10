@@ -2,12 +2,16 @@ package clients
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"strings"
 	"time"
 
 	"golang.org/x/oauth2"
 	"google.golang.org/api/idtoken"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	grpcMetadata "google.golang.org/grpc/metadata"
 
@@ -24,9 +28,22 @@ type AddressWrapperServiceClient struct {
 
 func NewAddressWrapperServiceClient(ctx context.Context, serviceURL string) (*AddressWrapperServiceClient, error) {
 	var opts []grpc.DialOption
+	host := strings.Split(serviceURL, ":")[0]
+	port := strings.Split(serviceURL, ":")[1]
+	isSecure := port == "443"
 
-	// TODO: instantiate with TLS credentials
-	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if !isSecure {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	} else {
+		systemRoots, err := x509.SystemCertPool()
+		if err != nil {
+			return nil, err
+		}
+		cred := credentials.NewTLS(&tls.Config{
+			RootCAs: systemRoots,
+		})
+		opts = append(opts, grpc.WithTransportCredentials(cred))
+	}
 
 	conn, err := grpc.NewClient(serviceURL, opts...)
 	if err != nil {
@@ -34,7 +51,11 @@ func NewAddressWrapperServiceClient(ctx context.Context, serviceURL string) (*Ad
 	}
 
 	if addressTokenSource == nil {
-		addressTokenSource, err = idtoken.NewTokenSource(ctx, serviceURL)
+		var protocol string = "http://"
+		if isSecure {
+			protocol = "https://"
+		}
+		addressTokenSource, err = idtoken.NewTokenSource(ctx, protocol+host)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to start address wrapper client: %w", err)
 		}
