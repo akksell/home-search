@@ -29,7 +29,7 @@ resource "google_cloud_run_v2_service" "default" {
 
     containers {
       name = "service"
-      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute:bde5d862"
+      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute:209e8524"
       /*
       ports {
         name           = "h2c"
