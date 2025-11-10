@@ -16,14 +16,16 @@ resource "google_cloud_run_v2_service" "default" {
     scaling_mode = "AUTOMATIC"
   }
 
-  # TODO: envoy sidecar configuration
   template {
     containers {
+      name = "service"
       image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/commute:6509d955"
+      /*
       ports {
         name           = "h2c"
         container_port = 8080
       }
+      */
 
       env {
         name = "GOOGLE_PROJECT_ID"
