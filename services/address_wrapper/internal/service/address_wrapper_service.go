@@ -76,6 +76,18 @@ func getStructuredAddress(address *base.Address) (string, error) {
 		component := "address.addressLines=" + util.URLEncode(address.GetStreet())
 		components += handleAmpersand(components, component)
 	}
+	if address.GetCity() != "" {
+		component := "address.locality=" + util.URLEncode(address.GetCity())
+		components += handleAmpersand(components, component)
+	}
+	if address.GetPostalCode() != "" {
+		component := "address.postalCode=" + util.URLEncode(address.GetPostalCode())
+		components += handleAmpersand(components, component)
+	}
+	if address.GetStateProvinceCode() != "" {
+		component := "address.administrativeArea=" + util.URLEncode(address.GetStateProvinceCode())
+		components += handleAmpersand(components, component)
+	}
 	if address.GetCountryCode() != "" {
 		component := "address.regionCode=" + util.URLEncode(address.GetCountryCode())
 		components += handleAmpersand(components, component)
