@@ -104,6 +104,7 @@ func (cs *commuteService) Calculate(ctx context.Context, request *pb.CalculateRe
 			continue
 		}
 		group.Add(1)
+		logger.LogAttrs(ctx, logger.LevelInfo, "processing routeElement", logger.Any("routeElement", routeElement))
 		go processor.ProcessRouteElement(routeElement)
 	}
 	group.Wait()
