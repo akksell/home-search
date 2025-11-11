@@ -19,7 +19,7 @@ resource "google_cloud_run_v2_service" "default" {
 
   template {
     containers {
-      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/address_wrapper:ee4379a8"
+      image = "us-south1-docker.pkg.dev/home-search-475404/homesearch-services-docker/address_wrapper:52ff0c1d"
       ports {
         name           = "h2c"
         container_port = 8080
