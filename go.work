@@ -5,4 +5,5 @@ use (
 	./services/address_wrapper
 	./services/commute
 	./services/roommate
+	./shared/go-pkg/logger
 )

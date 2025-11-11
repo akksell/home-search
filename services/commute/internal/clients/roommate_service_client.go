@@ -16,6 +16,7 @@ import (
 	grpcMetadata "google.golang.org/grpc/metadata"
 
 	pb "homesearch.axel.to/services/roommate/api"
+	"homesearch.axel.to/shared/logger"
 )
 
 var roomateTokenSource oauth2.TokenSource
@@ -32,8 +33,10 @@ func NewRoommateServiceClient(ctx context.Context, serviceURL string) (*Roommate
 	isSecure := port == "443"
 
 	if !isSecure {
+		logger.LogAttrs(ctx, logger.LevelInfo, "roommate service connection is insecure")
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	} else {
+		logger.LogAttrs(ctx, logger.LevelInfo, "securely connecting to roommate service with TLS")
 		systemRoots, err := x509.SystemCertPool()
 		if err != nil {
 			return nil, err
@@ -73,6 +76,7 @@ func (rs *RoommateServiceClient) GetGroupPointsOfInterest(ctx context.Context, g
 
 	token, err := roomateTokenSource.Token()
 	if err != nil {
+		logger.LogAttrs(ctx, logger.LevelError, "failed to get token from roomate token source")
 		return nil, fmt.Errorf("Failed to get group points of interest: %w", err)
 	}
 
@@ -82,9 +86,11 @@ func (rs *RoommateServiceClient) GetGroupPointsOfInterest(ctx context.Context, g
 		GroupId: groupId,
 	}
 
+	logger.LogAttrs(reqContext, logger.LevelInfo, "requesting points of interest", logger.String("groupId", groupId))
 	return rs.client.GetGroupPointsOfInterest(reqContext, request)
 }
 
-func (rs *RoommateServiceClient) Close() {
+func (rs *RoommateServiceClient) Close(ctx context.Context) {
+	logger.LogAttrs(ctx, logger.LevelInfo, "closing roommate service connection")
 	rs.conn.Close()
 }

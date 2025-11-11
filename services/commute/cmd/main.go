@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 
 	routing "cloud.google.com/go/maps/routing/apiv2"
@@ -15,49 +14,51 @@ import (
 	"homesearch.axel.to/commute/internal/store"
 
 	pb "homesearch.axel.to/services/commute/api"
+	"homesearch.axel.to/shared/logger"
 )
 
 func main() {
-	fmt.Println("Starting commute service...")
-
 	ctx := context.Background()
+	log := logger.Init("commute")
+	log.LogAttrs(ctx, logger.LevelInfo, "Starting commute service...")
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatal("%w", err)
+		log.LogAttrs(ctx, logger.LevelError, fmt.Sprintf("Failed to load config: %v", err))
 		return
 	}
 
 	host := net.JoinHostPort("", cfg.Port)
 	listen, err := net.Listen("tcp", host)
 	if err != nil {
-		fmt.Printf("Failed to listen on port %v: %v\n", cfg.Port, err)
+		log.LogAttrs(ctx, logger.LevelError, fmt.Sprintf("Failed to listen on port %v: %v", cfg.Port, err))
 		return
 	}
 	defer listen.Close()
 
 	addressWrapperClient, err := clients.NewAddressWrapperServiceClient(ctx, cfg.AddressWrapperSvcHost)
 	if err != nil {
-		fmt.Printf("Failed to connect to address wrapper service at %v: %v\n", cfg.AddressWrapperSvcHost, err)
+		log.LogAttrs(ctx, logger.LevelError, fmt.Sprintf("Failed to connect to address wrapper service at %v: %v", cfg.AddressWrapperSvcHost, err))
 		return
 	}
-	defer addressWrapperClient.Close()
+	defer addressWrapperClient.Close(ctx)
 
 	roommateClient, err := clients.NewRoommateServiceClient(ctx, cfg.RoommateSvcHost)
 	if err != nil {
-		fmt.Printf("Failed to connect to roommate service at %v: %v\n", cfg.RoommateSvcHost, err)
+		log.LogAttrs(ctx, logger.LevelError, fmt.Sprintf("Failed to connect to roommate service at %v: %v", cfg.RoommateSvcHost, err))
 		return
 	}
-	defer roommateClient.Close()
+	defer roommateClient.Close(ctx)
 
 	commuteStore, err := store.NewCommuteStore(ctx, cfg)
 	if err != nil {
-		fmt.Println("Failed to connect to commute store: %w", err)
+		log.LogAttrs(ctx, logger.LevelError, fmt.Sprintf("Failed to connect to commute store: %v", err))
 		return
 	}
 
 	gRoutesServiceClient, err := routing.NewRoutesClient(ctx)
 	if err != nil {
-		fmt.Printf("Failed to connect to google routes service: %v\n", err)
+		log.LogAttrs(ctx, logger.LevelError, fmt.Sprintf("Failed to connect to google routes service: %v", err))
 		return
 	}
 	defer gRoutesServiceClient.Close()
@@ -68,12 +69,12 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterCommuteServiceServer(grpcServer, service)
 
-	fmt.Printf("Starting server on port: %v\n", cfg.Port)
+	log.LogAttrs(ctx, logger.LevelInfo, fmt.Sprintf("Starting server on port: %v", cfg.Port))
 
 	if cfg.Environment == config.EnvironmentDevelopment {
 		reflection.Register(grpcServer)
 	}
 	if err := grpcServer.Serve(listen); err != nil {
-		fmt.Printf("Failed to server request: %v\n", err)
+		log.LogAttrs(ctx, logger.LevelError, fmt.Sprintf("Failed to server request: %v", err))
 	}
 }

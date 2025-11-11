@@ -17,6 +17,7 @@ import (
 
 	base "homesearch.axel.to/base/types"
 	pb "homesearch.axel.to/services/address_wrapper/api"
+	"homesearch.axel.to/shared/logger"
 )
 
 var addressTokenSource oauth2.TokenSource
@@ -33,8 +34,10 @@ func NewAddressWrapperServiceClient(ctx context.Context, serviceURL string) (*Ad
 	isSecure := port == "443"
 
 	if !isSecure {
+		logger.LogAttrs(ctx, logger.LevelInfo, "address wrapper service connection is insecure")
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	} else {
+		logger.LogAttrs(ctx, logger.LevelInfo, "securely connecting to address wrapper service with TLS")
 		systemRoots, err := x509.SystemCertPool()
 		if err != nil {
 			return nil, err
@@ -83,10 +86,12 @@ func (aws *AddressWrapperServiceClient) GetPlaceId(ctx context.Context, address 
 		Address: address,
 	}
 
+	logger.LogAttrs(requestCtx, logger.LevelInfo, "get placeId from address", logger.Group("address", address))
 	return aws.client.GetPlaceId(requestCtx, &request)
 }
 
 // Close the grpc client connection
-func (aws *AddressWrapperServiceClient) Close() {
+func (aws *AddressWrapperServiceClient) Close(ctx context.Context) {
+	logger.LogAttrs(ctx, logger.LevelInfo, "closing address wrapper service connection")
 	aws.conn.Close()
 }
