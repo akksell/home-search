@@ -23,26 +23,6 @@ static_resources:
                         route:
                           cluster: service_cluster
               http_filters:
-                - name: envoy.filters.http.jwt_authn
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
-                    providers:
-                      auth0_provider:
-                        issuer: https://dev-uf4l5nsmhlyab0tl.us.auth0.com/
-                        audiences:
-                          - https://commute.homesearch.api.axel.to
-                        remote_jwks:
-                          http_uri:
-                            uri: https://dev-uf4l5nsmhlyab0tl.us.auth0.com/.well-known/jwks.json
-                            cluster: auth0_jwks_cluster
-                            timeout: 2s
-                          cache_duration: 300s
-                    rules:
-                      - match:
-                          prefix: /
-                        requires:
-                          provider_name: auth0_provider
-    
                 - name: envoy.filters.http.grpc_json_transcoder
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
