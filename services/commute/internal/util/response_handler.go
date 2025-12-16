@@ -44,7 +44,7 @@ func NewCalculateResponseProcessor(lock *sync.Mutex, group *sync.WaitGroup, grou
 	}
 }
 
-func (p *calculateResponseProcessor) ProcessRouteElement(routeElement *routingpb.RouteMatrixElement) {
+func (p *calculateResponseProcessor) ProcessRouteElement(routeElement *routingpb.RouteMatrixElement, requestType RequestType) {
 	defer p.group.Done()
 	if routeElement.GetStatus().GetCode() != int32(code.Code_OK) {
 		processorError := fmt.Errorf("Failed to process point of interest %d: status %d with message %s", routeElement.GetDestinationIndex(), int32(routeElement.GetStatus().GetCode()), routeElement.GetStatus().GetMessage())
@@ -53,8 +53,13 @@ func (p *calculateResponseProcessor) ProcessRouteElement(routeElement *routingpb
 		p.lock.Unlock()
 		return
 	}
+	var poiIndex int32
+	if requestType == REQUEST_TYPE_HOME_DEPARTURE {
+		poiIndex = routeElement.GetDestinationIndex()
+	} else {
+		poiIndex = routeElement.GetOriginIndex()
+	}
 
-	poiIndex := routeElement.GetDestinationIndex()
 	pointOfInterest := p.pointsOfInterest[poiIndex]
 	commuteDuration := routeElement.GetDuration()
 	commuteSeconds := commuteDuration.GetSeconds()

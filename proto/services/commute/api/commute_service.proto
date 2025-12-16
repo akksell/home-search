@@ -21,10 +21,17 @@ message CalculateRequest {
   base.types.Address home_address = 1;
   optional bool disable_traffic = 2;
   string group_id = 3;
+  base.types.TimezoneAwareTime home_departure_time = 4;
+  base.types.TimezoneAwareTime point_of_interest_departure_time = 5;
 }
 
 message CalculateResponse {
-  repeated PointOfInterestDuration points_of_interest = 1;
+  DepartReturn depart_from = 2;
+  DepartReturn return_to = 3;
+
+  message DepartReturn {
+    repeated PointOfInterestDuration points_of_interest = 1;
+  }
 }
 
 message PointOfInterestDuration {

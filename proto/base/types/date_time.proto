@@ -30,3 +30,8 @@ message DateTime {
   Time time = 2;
   uint32 utcOffsetSeconds = 3;
 }
+
+message TimezoneAwareTime {
+  Time time = 1;
+  uint32 utcOffsetSeconds = 2;
+}

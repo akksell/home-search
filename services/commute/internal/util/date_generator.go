@@ -83,7 +83,16 @@ func (dg dateGenerator) GenerateTimestamp() (*timestamppb.Timestamp, error) {
 
 	// use 7AM as earliest (realisitic time we'd want to commute)
 	// TODO: use a dynamic time value based on user preferences
-	generatedTimestamp := time.Date(futureDate.Year(), futureDate.Month(), futureDate.Day(), 7, 0, 0, 0, location).UTC()
+	generatedTimestamp := time.Date(
+		futureDate.Year(),
+		futureDate.Month(),
+		futureDate.Day(),
+		dg.timeOfDay.Hour(),
+		dg.timeOfDay.Minute(),
+		dg.timeOfDay.Second(),
+		0,
+		location,
+	).UTC()
 	return timestamppb.New(generatedTimestamp), nil
 }
 
