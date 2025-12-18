@@ -32,6 +32,7 @@ func NewAddressWrapperServiceClient(ctx context.Context, serviceURL string) (*Ad
 	host := strings.Split(serviceURL, ":")[0]
 	port := strings.Split(serviceURL, ":")[1]
 	isSecure := port == "443"
+	isLocalhost := host == "127.0.0.1" || host == "localhost"
 
 	if !isSecure {
 		logger.LogAttrs(ctx, logger.LevelInfo, "address wrapper service connection is insecure")
@@ -58,7 +59,7 @@ func NewAddressWrapperServiceClient(ctx context.Context, serviceURL string) (*Ad
 		if isSecure {
 			protocol = "https://"
 		}
-		addressTokenSource, err = idtoken.NewTokenSource(ctx, protocol+host)
+		addressTokenSource, err = getTokenSourceStrategy(isLocalhost)(ctx, protocol+host)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to start address wrapper client: %w", err)
 		}
@@ -75,12 +76,14 @@ func (aws *AddressWrapperServiceClient) GetPlaceId(ctx context.Context, address 
 	requestCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	token, err := addressTokenSource.Token()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get place id: %w", err)
-	}
+	if addressTokenSource != nil {
+		token, err := addressTokenSource.Token()
+		if err != nil {
+			return nil, fmt.Errorf("Failed to get place id: %w", err)
+		}
 
-	requestCtx = grpcMetadata.AppendToOutgoingContext(requestCtx, "authorization", "Bearer "+token.AccessToken)
+		requestCtx = grpcMetadata.AppendToOutgoingContext(requestCtx, "authorization", "Bearer "+token.AccessToken)
+	}
 
 	request := pb.PlaceIdRequest{
 		Address: address,
@@ -94,4 +97,13 @@ func (aws *AddressWrapperServiceClient) GetPlaceId(ctx context.Context, address 
 func (aws *AddressWrapperServiceClient) Close(ctx context.Context) {
 	logger.LogAttrs(ctx, logger.LevelInfo, "closing address wrapper service connection")
 	aws.conn.Close()
+}
+
+func getTokenSourceStrategy(isLocalhost bool) func(context.Context, string, ...idtoken.ClientOption) (oauth2.TokenSource, error) {
+	if !isLocalhost {
+		return idtoken.NewTokenSource
+	}
+	return func(_ context.Context, __ string, ___ ...idtoken.ClientOption) (oauth2.TokenSource, error) {
+		return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: ""}), nil
+	}
 }

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"golang.org/x/oauth2"
-	"google.golang.org/api/idtoken"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -31,6 +30,7 @@ func NewRoommateServiceClient(ctx context.Context, serviceURL string) (*Roommate
 	host := strings.Split(serviceURL, ":")[0]
 	port := strings.Split(serviceURL, ":")[1]
 	isSecure := port == "443"
+	isLocalhost := host == "127.0.0.1" || host == "localhost"
 
 	if !isSecure {
 		logger.LogAttrs(ctx, logger.LevelInfo, "roommate service connection is insecure")
@@ -57,7 +57,7 @@ func NewRoommateServiceClient(ctx context.Context, serviceURL string) (*Roommate
 		if isSecure {
 			protocol = "https://"
 		}
-		roomateTokenSource, err = idtoken.NewTokenSource(ctx, protocol+host)
+		roomateTokenSource, err = getTokenSourceStrategy(isLocalhost)(ctx, protocol+host)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to start roommate service client: %w", err)
 		}
@@ -74,13 +74,15 @@ func (rs *RoommateServiceClient) GetGroupPointsOfInterest(ctx context.Context, g
 	reqContext, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	token, err := roomateTokenSource.Token()
-	if err != nil {
-		logger.LogAttrs(ctx, logger.LevelError, "failed to get token from roomate token source")
-		return nil, fmt.Errorf("Failed to get group points of interest: %w", err)
-	}
+	if roomateTokenSource != nil {
+		token, err := roomateTokenSource.Token()
+		if err != nil {
+			logger.LogAttrs(ctx, logger.LevelError, "failed to get token from roomate token source")
+			return nil, fmt.Errorf("Failed to get group points of interest: %w", err)
+		}
 
-	reqContext = grpcMetadata.AppendToOutgoingContext(reqContext, "authorization", "Bearer "+token.AccessToken)
+		reqContext = grpcMetadata.AppendToOutgoingContext(reqContext, "authorization", "Bearer "+token.AccessToken)
+	}
 
 	request := &pb.GetGroupPOIsRequest{
 		GroupId: groupId,
