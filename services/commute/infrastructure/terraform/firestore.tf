@@ -2,7 +2,9 @@ resource "google_firestore_database" "point_of_interest_store" {
   name = "${var.service_name}-poi-store"
   location_id = var.region
   type = "FIRESTORE_NATIVE"
-  delete_protection_state = "DELETE_PROTECTION_ENABLED"
+  // Decomissioning since a home was found - 2026-01-09. If this ever gets
+  // started back up, this should be set to DELETE_PROTECTION_ENABLED
+  delete_protection_state = "DELETE_PROTECTION_DISABLED"
   deletion_policy = "DELETE"
 
 }

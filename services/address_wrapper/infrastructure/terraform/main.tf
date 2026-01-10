@@ -11,6 +11,10 @@ resource "google_cloud_run_v2_service" "default" {
   ingress = "INGRESS_TRAFFIC_ALL"
   invoker_iam_disabled = false
 
+  // Decomissioning since a home was found - 2026-01-09. If this ever gets
+  // started back up, this should be removed or set to true
+  deletion_protection = false
+
   scaling {
     min_instance_count = 0
     max_instance_count = 2

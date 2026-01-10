@@ -11,6 +11,10 @@ resource "google_cloud_run_v2_service" "default" {
   ingress = "INGRESS_TRAFFIC_ALL"
   invoker_iam_disabled = true
 
+  // Decomissioning since a home was found - 2026-01-09. If this ever gets
+  // started back up, this should be removed
+  deletion_protection = false
+
   scaling {
     min_instance_count = 0
     max_instance_count = 2
@@ -36,7 +40,7 @@ resource "google_cloud_run_v2_service" "default" {
         container_port = 8080
       }
       */
-     
+
       depends_on = ["envoy-sidecar"]
 
       env {

@@ -1,9 +1,11 @@
-resource "google_firestore_database" "address_store" { 
+resource "google_firestore_database" "address_store" {
   name = "${var.service_name}-address-store-${var.environment}"
   location_id = var.region
   project = var.project_id
   type = "FIRESTORE_NATIVE"
-  delete_protection_state = "DELETE_PROTECTION_ENABLED"
+  // Decomissioning since a home was found - 2026-01-09. If this ever gets
+  // started back up, this should be set to DELETE_PROTECTION_ENABLED
+  delete_protection_state = "DELETE_PROTECTION_DISABLED"
   deletion_policy = "DELETE"
 }
 
